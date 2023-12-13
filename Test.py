@@ -35,5 +35,4 @@ class OurNeuralNetwork:
 network = OurNeuralNetwork()
 b = np.array([2, 3])
 print(network.feedforward(b))
-
 #Haven't finished yet...
