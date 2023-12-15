@@ -1,4 +1,5 @@
 # No Truce With The Furies
+# This is a code that predicts students grades in relation to their use of alcohol
 import tensorflow as tf
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ model.add(tf.keras.layers.Dense(1, input_shape=(1,)))  # Adding layers, Dense = 
 # Using adam to optimize, loss function Mean squared error (mse)
 model.compile(optimizer="adam", loss="mse")
 
-# Training with fit 5000 times
+# Training with fit 2500 times
 history = model.fit(x, y, epochs=2500)
 
 # Using model.predict to predict
