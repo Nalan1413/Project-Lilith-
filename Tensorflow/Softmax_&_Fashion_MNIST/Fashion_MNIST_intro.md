@@ -1,4 +1,5 @@
 Intrduction to Fashion MNIST : 
+
 https://github.com/zalandoresearch/fashion-mnist/blob/master/README.md
 
 What is Softmax:
