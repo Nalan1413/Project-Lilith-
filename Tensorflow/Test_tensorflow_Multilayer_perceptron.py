@@ -32,6 +32,8 @@ y = pro_data.sum_grade
 # Tensorflow modeling using Sequential model
 model = tf.keras.Sequential([tf.keras.layers.Dense(10, input_shape=(3,), activation="relu"),
                              tf.keras.layers.Dense(1)])
+# You can also use sigmiod function as activation if the output is a probability
+
 # Show model
 # model.summary()
 
