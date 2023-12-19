@@ -11,7 +11,7 @@ import backup_image as bi
 # print(train_lable.shape)  # (60000,)
 # print(test_image.shape, test_lable.shape)  # (10000, 28, 28) (10000,)
 
-plt.imshow(test_image[0])
+# plt.imshow(test_image[0])
 # plt.show()
 
 # Making the datasets into numbers smaller than one
@@ -22,30 +22,36 @@ test_image = test_image / 255
 model = tf.keras.Sequential()
 model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
 model.add(tf.keras.layers.Dense(128, activation="relu"))
+model.add(tf.keras.layers.Dropout(0.3))
+model.add(tf.keras.layers.Dense(128, activation="relu"))
+model.add(tf.keras.layers.Dropout(0.3))
+
 model.add(tf.keras.layers.Dense(10, activation="softmax"))
 
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["acc"])
 
-# Training
-model.fit(train_image, train_lable, epochs=20)
+# Training and Testing
+history = model.fit(train_image, train_lable, epochs=18, validation_data=(test_image, test_lable))
 
-# Testing
-print("\nEvaluate test data")
-model.evaluate(test_image, test_lable)
+# Plot graph of training
+# plt.plot(history.epoch, history.history.get("loss"), label="loss")
+# plt.plot(history.epoch, history.history.get("val_loss"), label="val_loss")
+# plt.legend()
+# plt.show()
 
 # Getting some image yourself
-pic = "./trousers.jpg"  # The path to your own image
+pic = "/Users/nalansuo/Desktop/dress.webp"  # The path to your own image
 image_array = bi.ImageDone(pic)
 
 plt.imshow(image_array[0])
-# plt.show()
+plt.show()
 
 image_array = image_array / 255
 
 # Getting prediction
 print("\nPrediction for -%s-" % pic)
 predictions = model.predict(image_array)
-max_index = np.argmax(predictions)
+max_index = np .argmax(predictions)
 
 if max_index == 0:
     print("It is a T-shirt/top")
@@ -67,6 +73,7 @@ if max_index == 8:
     print("It is a Bag")
 if max_index == 9:
     print("It is a Ankle boot")
+
 
 """
 Epoch 1/20
