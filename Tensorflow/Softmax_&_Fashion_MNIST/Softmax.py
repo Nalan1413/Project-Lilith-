@@ -32,6 +32,7 @@ model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=
 
 # Training and Testing
 history = model.fit(train_image, train_lable, epochs=18, validation_data=(test_image, test_lable))
+# Or use "model.evaluate(test_image, test_lable)" to test the reslts instead of validation
 
 # Plot graph of training
 # plt.plot(history.epoch, history.history.get("loss"), label="loss")
