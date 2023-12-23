@@ -132,3 +132,44 @@ print(
     "This image most likely belongs to {} with a {:.2f} percent confidence."
     .format(class_names[ans_index], 100 * np.max(predictions[0]))
 )
+
+
+"""
+Found 3670 files belonging to 5 classes.
+Using 2936 files for training.
+Found 3670 files belonging to 5 classes.
+Using 734 files for validation.
+['daisy', 'dandelion', 'roses', 'sunflowers', 'tulips']
+Epoch 1/15
+92/92 [==============================] - 19s 190ms/step - loss: 1.3033 - accuracy: 0.4530 - val_loss: 1.1201 - val_accuracy: 0.5490
+Epoch 2/15
+92/92 [==============================] - 18s 190ms/step - loss: 1.0580 - accuracy: 0.5834 - val_loss: 1.0157 - val_accuracy: 0.5967
+Epoch 3/15
+92/92 [==============================] - 18s 197ms/step - loss: 0.9677 - accuracy: 0.6189 - val_loss: 1.1114 - val_accuracy: 0.6281
+Epoch 4/15
+92/92 [==============================] - 19s 210ms/step - loss: 0.8862 - accuracy: 0.6628 - val_loss: 0.8974 - val_accuracy: 0.6485
+Epoch 5/15
+92/92 [==============================] - 19s 207ms/step - loss: 0.8330 - accuracy: 0.6771 - val_loss: 0.8114 - val_accuracy: 0.6853
+Epoch 6/15
+92/92 [==============================] - 19s 208ms/step - loss: 0.7676 - accuracy: 0.7163 - val_loss: 0.7925 - val_accuracy: 0.6962
+Epoch 7/15
+92/92 [==============================] - 19s 212ms/step - loss: 0.7241 - accuracy: 0.7279 - val_loss: 0.7965 - val_accuracy: 0.6785
+Epoch 8/15
+92/92 [==============================] - 19s 211ms/step - loss: 0.7074 - accuracy: 0.7302 - val_loss: 0.7623 - val_accuracy: 0.7125
+Epoch 9/15
+92/92 [==============================] - 21s 230ms/step - loss: 0.6762 - accuracy: 0.7490 - val_loss: 0.7085 - val_accuracy: 0.7302
+Epoch 10/15
+92/92 [==============================] - 20s 221ms/step - loss: 0.6303 - accuracy: 0.7558 - val_loss: 0.7997 - val_accuracy: 0.6975
+Epoch 11/15
+92/92 [==============================] - 20s 220ms/step - loss: 0.6427 - accuracy: 0.7558 - val_loss: 0.7125 - val_accuracy: 0.7071
+Epoch 12/15
+92/92 [==============================] - 20s 222ms/step - loss: 0.5940 - accuracy: 0.7742 - val_loss: 0.7008 - val_accuracy: 0.7207
+Epoch 13/15
+92/92 [==============================] - 22s 239ms/step - loss: 0.5784 - accuracy: 0.7728 - val_loss: 0.7492 - val_accuracy: 0.7139
+Epoch 14/15
+92/92 [==============================] - 21s 229ms/step - loss: 0.5553 - accuracy: 0.7922 - val_loss: 0.6608 - val_accuracy: 0.7384
+Epoch 15/15
+92/92 [==============================] - 21s 226ms/step - loss: 0.5265 - accuracy: 0.7994 - val_loss: 0.6929 - val_accuracy: 0.7384
+1/1 [==============================] - 0s 102ms/step
+This image most likely belongs to sunflowers with a 99.59 percent confidence.
+"""
