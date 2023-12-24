@@ -133,6 +133,9 @@ print(
     .format(class_names[ans_index], 100 * np.max(predictions[0]))
 )
 
+# Save model
+saved_model_path = "./Saved_model"
+model.save(saved_model_path)
 
 """
 Found 3670 files belonging to 5 classes.
