@@ -1,27 +1,18 @@
 # No Truce With The Furies
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
-import os
+import backup_image as bi
+import numpy as np
 
-def ImageDone(path):
-    original_image = Image.open(path)
-    grayscale_image = original_image.convert("L")
-    inverted_image = Image.eval(grayscale_image, lambda x: 255 - x)
-    resized_image = inverted_image.resize((180, 180))
-    image_array = np.array(resized_image)
-    image_array = image_array / 255
-    image_batch = np.expand_dims(image_array, axis=0)
-    return image_batch
-
-
-def package_image(url, fname, img_height, img_width):
-    image_file = tf.keras.utils.get_file(fname, origin=url)
-    img = tf.keras.utils.load_img(
-        image_file, target_size=(img_height, img_width)
-    )
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)
-    os.remove(image_file)
-    return img_array
+class_names = ['daisy', 'dandelion', 'roses', 'sunflowers', 'tulips']
+loaded_model = tf.saved_model.load("./Saved_model")
+url = "https://www.thespruce.com/thmb/tSi9I62mHGnX9DbORpErX4Mjc0Y=/3000x0/filters:no_upscale():max_bytes(150000):strip_icc()/no-respect-for-clover-and-dandelion-weeds-2153155-hero-e5fe10c1d40b41a68219c9705f6e3b88.jpg"
+filename = "1.jpg"
+img_height = 180
+img_width = 180
+image_array = bi.package_image(url, filename, img_height, img_width)
+predictions = loaded_model(image_array)
+ans_index = np.argmax(predictions)
+print(
+    "This image most likely belongs to {} with a {:.2f} percent confidence."
+    .format(class_names[ans_index], 100 * np.max(predictions[0]))
+)
