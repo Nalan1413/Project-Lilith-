@@ -24,11 +24,6 @@ pythia.init()
 pythia.next()
 
 # Data
-e_num = 0
-ph_num = 0
-n_num = 0
-pr_num = 0
-hi_num = 0
 energies = []
 par_dict = {}
 event = pythia.event
