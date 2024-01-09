@@ -16,4 +16,4 @@ imdb_test = keras.utils.text_dataset_from_directory(
 )
 
 print(imdb_train.unbatch().take(1).get_single_element())
-
+# ...
