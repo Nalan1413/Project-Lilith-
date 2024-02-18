@@ -2,6 +2,8 @@
 import pythia8
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from SecondaryCascade import Cascade
+import pickle
 
 # Proton
 pythia = pythia8.Pythia()
@@ -16,45 +18,72 @@ pythia.readString("Beams:frameType = 3")
 pythia.readString("HeavyIon:SigFitNGen = 0")
 pythia.readString("HeavyIon:SigFitDefPar = 29.95,2.19,0.60")
 pythia.readString("HardQCD:all = on")
+
+"""
 pythia.readString("PartonLevel:MPI = on")
 pythia.readString("MultipartonInteractions:alphaSvalue = 0.130")
 pythia.readString("MultipartonInteractions:pTmaxMatch = 0")
 pythia.readString("MultipartonInteractions:bProfile = 1")
 pythia.readString("MultipartonInteractions:allowRescatter = on")
+"""
 
 pythia.init()
-event = pythia.event
-
-for events in range(1, 51):
+for events in range(5):
     pythia.next()
-    print(f"Number of particles {event.size()}")
-    if events % 5 == 0:
-        collision_count = 0
-        for particle in event:
+    event = pythia.event
+    print(f"目前数量{event.size()}")
+    count = 0
+    sec = []
+    for idx, particle in enumerate(event):
+        # Add particles and check for collision
+        if particle.id() == 2212 and particle.isFinal():
+            print("found")
+            Cas = Cascade(particle.e(), particle.px(), particle.py(), particle.pz(),
+                          particle.xProd(), particle.yProd(), particle.zProd(), idx)
+            sec.append(Cas.transformation())
+            count += 1
 
-            # Debug
-            if particle.isFinal() != 10:
-                if particle.id() == 1000070140:
-                    collision_count += 1
-                    print(f"event {events} number of N14: {collision_count}")
+        if count > 5:
+            break
 
-            # Add particles and check for collision
-            if particle.id() == 2212 and particle.isFinal():
-                print("found")
-                # Particle::Particle(int id, int status = 0, int mother1 = 0, int mother2 = 0, int daughter1 = 0, int daughter2 = 0,
-                # int col = 0, int acol = 0, double px = 0., double py = 0., double pz = 0., double e = 0., double m = 0., double scale = 0., double pol = 9.)
-                n14 = pythia8.Particle(1000070140, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 13144.859)
-                n14.vProd(particle.xProd(), particle.yProd(), particle.zProd(), particle.tProd())
-                event.append(n14)
-                print(n14.xProd(),n14.yProd(),n14.zProd())
 
-# Init data and Graphs
+
+# Data and Graphs
+# Primary shower
 shower_particles = [particle for particle in event]
 particle_x = [particle.xProd() for particle in shower_particles]
 particle_y = [particle.yProd() for particle in shower_particles]
 particle_z = [particle.zProd() for particle in shower_particles]
 particle_en = [particle.e() for particle in shower_particles]
 
+parent_ids_m1 = [particle.mother1() for particle in shower_particles]
+parent_ids_m2 = [particle.mother2() for particle in shower_particles]
+particle_eta = [particle.eta() for particle in shower_particles]
+particle_phi = [particle.phi() for particle in shower_particles]
+
+
+# Secondary Shower
+sec_particle_x = []
+sec_particle_y = []
+sec_particle_z = []
+sec_particle_en = []
+sec_parent_ids_m1 = []
+sec_parent_ids_m2 = []
+sec_particle_eta = []
+sec_particle_phi = []
+for m in range(len(sec)):
+    sec_particle_x.append([particle.xProd() for particle in sec[m]])
+    sec_particle_y.append([particle.yProd() for particle in sec[m]])
+    sec_particle_z.append([particle.zProd() for particle in sec[m]])
+    sec_particle_en.append([particle.e() for particle in sec[m]])
+
+    sec_parent_ids_m1.append([particle.mother1() for particle in sec[m]])
+    sec_parent_ids_m2.append([particle.mother2() for particle in sec[m]])
+    sec_particle_eta.append([particle.eta() for particle in sec[m]])
+    sec_particle_phi.append([particle.phi() for particle in sec[m]])
+
+
+# Energy and names
 energies = []
 par_dict = {}
 for i in range(event.size()):
@@ -69,13 +98,10 @@ for i in range(event.size()):
     else:
         par_dict[particle_name] = 1
 
-
-parent_ids_m1 = [particle.mother1() for particle in shower_particles]
-parent_ids_m2 = [particle.mother2() for particle in shower_particles]
-particle_eta = [particle.eta() for particle in shower_particles]
-particle_phi = [particle.phi() for particle in shower_particles]
-
-pythia.stat()
+shower_color = 'blue'
+sec_color = 'red'
+shower_colors = [shower_color] * len(particle_x)
+sec_colors = [sec_color] * sum(len(particles) for particles in sec_particle_x)
 
 plt.figure(figsize=(10, 10))
 plt.hist(energies, bins=50, range=(0, 200), density=True, alpha=0.7, color='blue')
@@ -93,7 +119,7 @@ plt.title('Particle ID Distribution')
 
 fig, ax_polar = plt.subplots(1, 1, subplot_kw=dict(projection='polar'), figsize=(10, 8))
 for i in range(len(shower_particles)):
-    ax_polar.scatter(particle_phi[i], particle_eta[i], c=particle_en[i], cmap='viridis', s=50, alpha=0.7)
+    ax_polar.scatter(particle_phi[i], particle_eta[i], c=shower_colors[i], cmap='viridis', s=50, alpha=0.7)
     if parent_ids_m1[i] != 0:
         ax_polar.plot([event[parent_ids_m1[i]].phi(), particle_phi[i]],
                       [event[parent_ids_m1[i]].eta(), particle_eta[i]], color='gray', linestyle='--')
@@ -101,37 +127,71 @@ for i in range(len(shower_particles)):
         ax_polar.plot([event[parent_ids_m2[i]].phi(), particle_phi[i]],
                       [event[parent_ids_m2[i]].eta(), particle_eta[i]], color='gray', linestyle='--')
 
+for j in range(len(sec)):
+    for k in range(sec[j].size()):
+        ax_polar.scatter(sec_particle_phi[j][k], sec_particle_eta[j][k], c=sec_colors[j], cmap='viridis', s=50, alpha=0.7)
+        if sec_parent_ids_m1[j][k] != 0:
+            ax_polar.plot([sec_particle_phi[j][sec_parent_ids_m1[j][k]], sec_particle_phi[j][k]],
+                          [sec_particle_eta[j][sec_parent_ids_m1[j][k]], sec_particle_eta[j][k]], color='gray', linestyle='--')
+        if sec_parent_ids_m2[j][k] != 0:
+            ax_polar.plot([sec_particle_phi[j][sec_parent_ids_m2[j][k]], sec_particle_phi[j][k]],
+                          [sec_particle_eta[j][sec_parent_ids_m2[j][k]], sec_particle_eta[j][k]], color='gray', linestyle='--')
+
 ax_polar.set_title('Polar Coordinates')
-cbar_polar = plt.colorbar(ax_polar.scatter([], [], c=[], cmap='viridis', s=50, alpha=0.7), ax=ax_polar, orientation='vertical')
+cbar_polar = plt.colorbar(ax_polar.collections[0], ax=ax_polar, orientation='vertical')
 cbar_polar.set_label('Energy')
 
 fig = plt.figure(figsize=(10, 8))
 ax_3d = fig.add_subplot(111, projection='3d')
 
-sc = ax_3d.scatter(particle_x, particle_y, particle_z, c=particle_en, cmap='viridis', s=50, alpha=0.7)
+ax_3d.scatter(particle_x, particle_y, particle_z, c=shower_colors, cmap='viridis', s=50, alpha=0.7)
 
 for i in range(len(shower_particles)):
     if parent_ids_m1[i] != 0:
-        ax_3d.plot([particle_x[parent_ids_m1[i]], particle_x[i]],
-                   [particle_y[parent_ids_m1[i]], particle_y[i]],
-                   [particle_z[parent_ids_m1[i]], particle_z[i]], color='gray', linestyle='--')
+        ax_3d.plot([event[parent_ids_m1[i]].xProd(), particle_x[i]],
+                   [event[parent_ids_m1[i]].yProd(), particle_y[i]],
+                   [event[parent_ids_m1[i]].zProd(), particle_z[i]], color='gray', linestyle='--')
     if parent_ids_m2[i] != 0:
-        ax_3d.plot([particle_x[parent_ids_m2[i]], particle_x[i]],
-                   [particle_y[parent_ids_m2[i]], particle_y[i]],
-                   [particle_z[parent_ids_m2[i]], particle_z[i]], color='gray', linestyle='--')
+        ax_3d.plot([event[parent_ids_m2[i]].xProd(), particle_x[i]],
+                   [event[parent_ids_m2[i]].yProd(), particle_y[i]],
+                   [event[parent_ids_m2[i]].zProd(), particle_z[i]], color='gray', linestyle='--')
+
+for j in range(len(sec)):
+    ax_3d.scatter(sec_particle_x[j], sec_particle_y[j], sec_particle_z[j], c=sec_colors[j],
+                  cmap='viridis', s=50, alpha=0.7)
+
+    for k in range(sec[j].size()):
+        if sec_parent_ids_m1[j][k] != 0:
+            ax_3d.plot([sec_particle_x[j][sec_parent_ids_m1[j][k]], sec_particle_x[j][k]],
+                       [sec_particle_y[j][sec_parent_ids_m1[j][k]], sec_particle_y[j][k]],
+                       [sec_particle_z[j][sec_parent_ids_m1[j][k]], sec_particle_z[j][k]], color='gray', linestyle='--')
+        if sec_parent_ids_m2[j][k] != 0:
+            ax_3d.plot([sec_particle_x[j][sec_parent_ids_m2[j][k]], sec_particle_x[j][k]],
+                       [sec_particle_y[j][sec_parent_ids_m2[j][k]], sec_particle_y[j][k]],
+                       [sec_particle_z[j][sec_parent_ids_m2[j][k]], sec_particle_z[j][k]], color='gray', linestyle='--')
 
 ax_3d.set_xlabel('X')
 ax_3d.set_ylabel('Y')
 ax_3d.set_zlabel('Z')
 ax_3d.set_title('3D Coordinates')
 
-ax_3d.set_xlim(-25, 25)
-ax_3d.set_ylim(-25, 25)
-ax_3d.set_zlim(-25, 25)
+ax_3d.set_xlim(-0.002, 0.002)
+ax_3d.set_ylim(-0.002, 0.002)
+ax_3d.set_zlim(-0.002, 0.002)
 
-
-cbar_ax_3d = plt.colorbar(sc, ax=ax_3d, orientation='vertical')
+cbar_ax_3d = plt.colorbar(ax_3d.collections[0], ax=ax_3d, orientation='vertical')
 cbar_ax_3d.set_label('Energy')
+
+print(f"Number of primary shower particles{len(particle_x)}")
+num_points = len(particle_x) + sum([len(particles) for particles in sec_particle_x])
+print(f"Number of shower particles: {num_points}")
+
 plt.show()
-num_points = len(sc.get_offsets())
-print(f"Number of points: {num_points}")
+
+Primary_shower_data = {'particle_x': particle_x, 'particle_y': particle_y, 'particle_z': particle_z, 'particle_en': particle_en,
+                       'parent_ids_m1': parent_ids_m1, 'parent_ids_m2': parent_ids_m2, 'particle_eta': particle_eta, 'particle_phi': particle_phi}
+Secondary_shower_data = {'sec_particle_x': sec_particle_x, 'sec_particle_y': sec_particle_y, 'sec_particle_z': sec_particle_z, 'sec_particle_en': sec_particle_en,
+                         'sec_parent_ids_m1': sec_parent_ids_m1, 'sec_parent_ids_m2': sec_parent_ids_m2, 'sec_particle_eta': sec_particle_eta, 'sec_particle_phi': sec_particle_phi}
+with open('data.pkl', 'wb') as f:
+    pickle.dump(Primary_shower_data, f)
+    pickle.dump(Secondary_shower_data, f)
